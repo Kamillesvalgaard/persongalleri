@@ -47,6 +47,10 @@
 
         }
 
+        .valgt {
+            background-color: red;
+        }
+
         @media (min-width: 836px) {
             img {
                 width: 50%;
@@ -55,10 +59,21 @@
             article {
                 font-size: 1vw;
             }
-        }
 
+
+
+        }
     </style>
 </head>
+<header>
+    <h1>Alle</h1>
+    <nav>
+        <button data-troende="alle" class="valgt">Alle</button>
+        <button data-troende="ja">Troende</button>
+        <button data-troende="nej">Ikke troende</button>
+        <button data-troende="tvivler">Tvivler</button>
+    </nav>
+</header>
 
 <body>
 
@@ -80,6 +95,7 @@
     <script>
         const url = "https://persongalleri-5d3e.restdb.io/rest/persongalleri";
         const medieurl = "https://persongalleri-5d3e.restdb.io/media/";
+        const header = document.querySelector("header h1");
 
         const options = {
             headers: {
@@ -87,32 +103,55 @@
             }
         };
 
-        async function hentData() {
-            const respons = await fetch(url, options);
-            const json = await respons.json();
-            vis(json);
+        document.addEventListener("DOMContentLoaded", start)
+        let personer;
+        let filter = "alle";
+
+        function start() {
+            const filterKnapper = document.querySelectorAll("nav button");
+            filterKnapper.forEach(knap => knap.addEventListener("click", filtrerPersoner));
+            hentData();
         }
 
-        const main = document.querySelector("main");
-        const template = document.querySelector("template").content;
+        function filtrerPersoner() {
+            filter = this.dataset.troende;
+            console.log("Troende", filter);
+            document.querySelector(".valgt").classList.remove("valgt");
+            this.classList.add("valgt");
+            visPersoner();
+            header.textContent = this.textContent;
+        }
 
-        function vis(json) {
-            console.log(json);
+        async function hentData() {
+            const respons = await fetch(url, options);
+            personer = await respons.json();
 
-            json.forEach(person => {
-                const klon = template.cloneNode(true);
-                klon.querySelector(".billede").src = medieurl + person.billede;
-                klon.querySelector(".navn").textContent = person.efternavn;
-                klon.querySelector(".titel").textContent = person.titel;
-                klon.querySelector(".hobby").textContent = person.hobby;
-                main.appendChild(klon);
+            console.log("Personer", personer);
+            visPersoner();
+        }
+
+
+
+        function visPersoner() {
+            //            console.log(json);
+
+            const main = document.querySelector("main");
+            const template = document.querySelector("template").content;
+            main.textContent = "";
+            personer.forEach(person => {
+
+                if (filter == person.troende || filter == "alle") {
+                    const klon = template.cloneNode(true);
+                    klon.querySelector(".billede").src = medieurl + person.billede;
+                    klon.querySelector(".navn").textContent = person.efternavn;
+                    klon.querySelector(".titel").textContent = person.titel;
+                    klon.querySelector(".hobby").textContent = person.hobby;
+                    main.appendChild(klon);
+                }
 
             })
         }
 
         hentData();
-
     </script>
-</body>
-
-</html>
+</body></html>
